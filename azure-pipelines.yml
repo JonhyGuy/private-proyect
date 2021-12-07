@@ -7,15 +7,28 @@ trigger:
 - master
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: windows-latest
 
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '10.x'
+    versionSpec: '14.x'
   displayName: 'Install Node.js'
 
 - script: |
     npm install
-    
+    npm install --save-dev mocha
+    npm install -g mocha-junit-reporter
+
+    npm run build
+    npx mocha ./test.js --reporter mocha-junit-reporter --reporter-options mochaFile=./TEST-RESULT.xml --timeout 14000
+    npm test
   displayName: 'npm install and build'
+  
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: './TEST_RESULT.xml'
+    testRunTitle: 'test'
+
+
